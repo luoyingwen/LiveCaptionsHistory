@@ -31,7 +31,7 @@
 
 ## 运行条件和版本兼容
 
-当前交付适配本机 Windows x64 组件：`LiveCaptionsBackendDll.dll` 版本 `2608.26000.0.0`，SHA-256 为 `eccd4adc7e4e8f127344a0ccbb7e09c92e185d8589cf5197a6f0dd1de0ce9fef`。需要保留 Windows 内置识别 DLL、已安装的语言模型，以及 .NET 8 Windows Desktop Runtime（本机已有）。
+当前交付适配本机 Windows x64 组件：`LiveCaptionsBackendDll.dll` 版本 `2609.28000.400.0`，SHA-256 为 `0c8054bf89fb05742e82f1667a03afc8f1d6f52ec878296df0974f7747c6b4ca`。需要保留 Windows 内置识别 DLL、已安装的语言模型，以及 .NET 8 Windows Desktop Runtime（本机已有）。
 
 这是 Windows 私有 ABI 的本机适配，不是微软承诺兼容的公共 API。应用会在调用前校验后端文件；Windows 更新导致版本不匹配时会提示需要重新适配，而不会继续使用旧虚表偏移调用。其他 Windows 构建和 ARM64 尚未验证。
 

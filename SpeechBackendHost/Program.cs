@@ -9,7 +9,7 @@ using System.Text.Json;
 // by reverse engineering and an independent audio transcription test.
 internal static class Program
 {
-    private const string SupportedHash = "ECCD4ADC7E4E8F127344A0CCBB7E09C92E185D8589CF5197A6F0DD1DE0CE9FEF";
+    private const string SupportedHash = "0C8054BF89FB05742E82F1667A03AFC8F1D6F52EC878296DF0974F7747C6B4CA";
     private static readonly object OutputLock = new();
     private static volatile bool _stop;
     private static volatile bool _acceptCaptions;

@@ -16,10 +16,10 @@ Windows 本机语音转文字与可滚动字幕历史窗口。直接在独立子
 
 - Windows x64，且已经安装所需的 Windows 字幕识别组件与语言模型。
 - 构建需要能够编译 `net8.0-windows` 的 .NET SDK；运行需要 .NET 8 Windows Desktop Runtime。
-- 当前适配的 `LiveCaptionsBackendDll.dll` 版本为 **2608.26000.0.0**，SHA-256：
+- 当前适配的 `LiveCaptionsBackendDll.dll` 版本为 **2609.28000.400.0**，SHA-256：
 
   ```text
-  eccd4adc7e4e8f127344a0ccbb7e09c92e185d8589cf5197a6f0dd1de0ce9fef
+  0c8054bf89fb05742e82f1667a03afc8f1d6f52ec878296df0974f7747c6b4ca
   ```
 
 这是对 Windows 私有接口的特定版本适配，不是通用的 Windows 语音 SDK。程序会在调用前校验后端文件；其他版本可能需要重新适配。没有将 Windows DLL、模型或模型许可证复制到本仓库。
