@@ -4,14 +4,14 @@ using System.Text.RegularExpressions;
 namespace LiveCaptionsHistory;
 
 // Partial events replace only the unfinished utterance. Final events establish
-// a paragraph boundary, even when two consecutive utterances have identical text.
+// a line boundary, even when two consecutive utterances have identical text.
 public sealed class CaptionAccumulator
 {
     private readonly StringBuilder _archive = new();
     private string _current = "";
     public bool Recording { get; private set; } = true;
     public string Text => _current.Length == 0 ? _archive.ToString()
-        : _archive.Length == 0 ? _current : _archive + "\n\n" + _current;
+        : _archive.Length == 0 ? _current : _archive + "\n" + _current;
 
     public bool ObserveRecognition(string input, bool isFinal)
     {
@@ -35,7 +35,7 @@ public sealed class CaptionAccumulator
     private void Commit()
     {
         if (_current.Length == 0) return;
-        if (_archive.Length > 0) _archive.Append("\n\n");
+        if (_archive.Length > 0) _archive.Append("\n");
         _archive.Append(_current);
         _current = "";
     }
