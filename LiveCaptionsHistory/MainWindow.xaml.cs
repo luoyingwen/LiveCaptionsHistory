@@ -1,11 +1,13 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
@@ -45,6 +47,24 @@ public partial class MainWindow : Window
         _reader.Reading += reading => Dispatcher.BeginInvoke(() => Receive(reading));
         _saveTimer.Tick += async (_, _) => await SaveAsync();
     }
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        // Full and compact mode share this HWND. Set the affinity before the window is shown.
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041)
+            && !SetWindowDisplayAffinity(new WindowInteropHelper(this).Handle, WdaExcludeFromCapture))
+        {
+            Trace.TraceWarning("Could not exclude the caption window from capture (Win32 error {0}).",
+                Marshal.GetLastWin32Error());
+        }
+    }
+
+    private const uint WdaExcludeFromCapture = 0x00000011;
+
+    [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _reader.Start();
