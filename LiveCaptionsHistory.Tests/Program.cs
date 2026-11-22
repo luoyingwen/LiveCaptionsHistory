@@ -1,4 +1,5 @@
 using LiveCaptionsHistory;
+using SpeechBackendHost;
 
 var count = 0;
 void Check<T>(string name, T actual, T expected)
@@ -69,3 +70,15 @@ longHistory.ObserveRecognition("Current unfinished sentence", false);
 longHistory.ObserveRecognition("Current corrected sentence.", true);
 Check("long history survives partial revisions", longHistory.Text, string.Join("\n", paragraphs) + "\nCurrent corrected sentence.");
 Console.WriteLine($"{count} transcript tests passed.");
+
+count = 0;
+Check("default prefers US English", RecognitionLanguageSelection.Select(["zh-CN", "en-GB", "EN-us"], null), "EN-us");
+Check("default accepts another installed English model", RecognitionLanguageSelection.Select(["zh-CN", "en-GB"], null), "en-GB");
+Check("default accepts a generic English model", RecognitionLanguageSelection.Select(["zh-CN", "en"], null), "en");
+Check("without English keep the Windows language", RecognitionLanguageSelection.Select(["zh-CN"], null), null);
+Check("explicit choice overrides the English default", RecognitionLanguageSelection.Select(["en-US", "zh-CN"], "ZH-cn"), "zh-CN");
+bool missingLanguageRejected = false;
+try { RecognitionLanguageSelection.Select(["en-US"], "zh-CN"); }
+catch (InvalidOperationException) { missingLanguageRejected = true; }
+Check("explicit missing model is rejected", missingLanguageRejected, true);
+Console.WriteLine($"{count} recognition language tests passed.");

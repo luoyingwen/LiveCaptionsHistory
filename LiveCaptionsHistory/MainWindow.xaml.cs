@@ -39,6 +39,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        TopmostCheck.IsChecked = true;
         TranscriptBox.AddHandler(RequestBringIntoViewEvent,
             new RequestBringIntoViewEventHandler(KeepTranscriptViewport), handledEventsToo: true);
         _historyDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LiveCaptionsHistory", "Sessions");

@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using SpeechBackendHost;
 
 // The private ABI below is valid only for the exact installed binary verified
 // by reverse engineering and an independent audio transcription test.
@@ -74,10 +75,10 @@ internal static class Program
             Check(Method<NoArgs>(instance, 30)(instance));
             var languages = GetLanguages(instance);
             var languageIndex = Array.IndexOf(args, "--language");
-            if (languageIndex >= 0 && languageIndex + 1 < args.Length)
+            var requestedLanguage = languageIndex >= 0 && languageIndex + 1 < args.Length ? args[languageIndex + 1] : null;
+            var selected = RecognitionLanguageSelection.Select(languages, requestedLanguage);
+            if (selected is not null && !string.Equals(selected, GetString(instance, 31), StringComparison.OrdinalIgnoreCase))
             {
-                var selected = languages.FirstOrDefault(l => string.Equals(l, args[languageIndex + 1], StringComparison.OrdinalIgnoreCase))
-                    ?? throw new InvalidOperationException("所选语言的本机模型尚未安装。");
                 Check(Native.WindowsCreateString(selected, (uint)selected.Length, out var h));
                 try { Check(Method<SwitchLanguage>(instance, 29)(instance, h, 0)); }
                 finally { Native.WindowsDeleteString(h); }

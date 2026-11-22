@@ -9,7 +9,7 @@
 1. 查找包含原生后端的 Windows 系统应用目录，校验已验证版本的 SHA-256。
 2. 添加系统组件的 DLL 搜索目录，并初始化 WinRT/DispatcherQueue。
 3. 创建后端对象，从 Windows 设置读取当前模型语言并枚举已安装模型。
-4. 根据本次会话选择切换语言；不调用写入 Windows 全局语言设置的方法。
+4. 优先使用当前会话手动选择的已安装模型；首次连接时默认选择已安装的 `en-US`，其次选择其他已安装的英语模型，没有英语模型时沿用 Windows 初始化的语言。不调用写入 Windows 全局语言设置的方法。
 5. 订阅增量/最终识别事件，启动后端并运行 STA 消息循环。
 
 验证版本使用 `Microsoft.CognitiveServices.Speech.core.dll`、embedded.sr、embedded.sr.runtime 和 ONNX Runtime。应用不需要额外的托管 Speech SDK 包，不复制 Windows DLL 或模型，不提取模型许可证。

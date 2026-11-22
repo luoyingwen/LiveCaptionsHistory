@@ -4,7 +4,7 @@ Windows 本机语音转文字与可滚动字幕历史窗口。直接在独立子
 
 ## 功能
 
-- 转写电脑正在播放的声音，使用本机已安装的中文或英语模型。
+- 转写电脑正在播放的声音。默认使用已安装的英语模型（优先美式英语），未安装英语时沿用 Windows 字幕设置。
 - 保留历史字幕，支持滚动回看、文字选择、复制和导出。
 - 自动保存到 `%LOCALAPPDATA%\LiveCaptionsHistory\Sessions`。
 - 精炼模式仅显示字幕和滚动条，可移动、缩放和置顶。
@@ -36,7 +36,7 @@ cd LiveCaptionsHistory
 .\LiveCaptionsHistory\dist\LiveCaptionsHistory.exe
 ```
 
-构建脚本先执行 30 项历史文本测试及 3 个子进程生命周期场景，再发布程序到 `LiveCaptionsHistory\dist`，并生成本机快捷方式 `LiveCaptionsHistory\字幕历史.lnk`。分发或移动程序时需要保留完整 `dist` 目录及其 `engine` 子目录。
+构建脚本先执行历史文本测试、识别语言选择测试及 3 个子进程生命周期场景，再发布程序到 `LiveCaptionsHistory\dist`，并生成本机快捷方式 `LiveCaptionsHistory\字幕历史.lnk`。分发或移动程序时需要保留完整 `dist` 目录及其 `engine` 子目录。
 
 编译与上述自动测试不要求已安装识别模型；真实转写和 WPF 界面诊断需要符合运行条件的 Windows 环境。
 
@@ -46,7 +46,7 @@ cd LiveCaptionsHistory
 | --- | --- |
 | 切换精炼模式 | 工具栏按钮或 `Ctrl+Shift+M` |
 | 返回完整界面 | `Esc` 或右键菜单 |
-| 移动窗口 | 拖动顶部留白，或按住 `Alt` 拖动字幕区 |
+| 移动窗口 | 拖动顶部浅灰色区域，或按住 `Alt` 拖动字幕区 |
 | 键盘移动 | `Alt+方向键` |
 | 调整大小 | 拖动窗口边缘 |
 | 回到最新字幕 | `Ctrl+End` 或右键菜单 |

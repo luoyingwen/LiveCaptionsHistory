@@ -4,6 +4,7 @@
  <Application.Resources>
   <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
   <SolidColorBrush x:Key="BackgroundBrush" Color="#F3F6F7"/>
+  <SolidColorBrush x:Key="CompactDragBrush" Color="#E7EAED"/>
   <SolidColorBrush x:Key="TextBrush" Color="#182B33"/>
   <SolidColorBrush x:Key="MutedBrush" Color="#526570"/>
   <SolidColorBrush x:Key="AccentBrush" Color="#087E78"/>

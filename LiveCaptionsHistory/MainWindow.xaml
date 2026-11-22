@@ -112,7 +112,7 @@
    </Grid>
   </Border>
   <Border x:Name="CompactDragArea" Grid.Row="2" Visibility="Collapsed" Height="16" VerticalAlignment="Top"
-    Margin="8,6,28,0" Background="Transparent" Cursor="SizeAll" MouseLeftButtonDown="CompactDragMouseDown"
+    Margin="8,6,28,0" Background="{StaticResource CompactDragBrush}" CornerRadius="4" Cursor="SizeAll" MouseLeftButtonDown="CompactDragMouseDown"
     AutomationProperties.Name="拖动字幕窗口" ToolTip="拖动移动窗口，也可按住 Alt 拖动字幕区；Esc 返回完整界面"/>
   <Grid x:Name="FooterPanel" Grid.Row="3" Margin="0,14,0,0">
    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
