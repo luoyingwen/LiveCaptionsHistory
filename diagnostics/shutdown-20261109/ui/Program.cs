@@ -17,6 +17,7 @@ internal static class Program
         {
             if (mode.StartsWith("flicker")) FlickerProbe.Start(app, (MainWindow)app.MainWindow, mode == "flicker-observe");
             else if (mode == "compact") CompactProbe.Start(app, (MainWindow)app.MainWindow);
+            else if (mode == "translation") TranslationProbe.Start(app, (MainWindow)app.MainWindow);
             else new ShutdownProbe(mode).Start(app, (MainWindow)app.MainWindow);
         }));
         return app.Run();

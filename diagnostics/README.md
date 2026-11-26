@@ -19,6 +19,9 @@ dotnet run --project .\diagnostics\shutdown-20261109\ui -c Release -- settled
 # 精炼模式及滚动位置检查，生成 WPF 渲染预览
 dotnet run --project .\diagnostics\shutdown-20261109\ui -c Release -- compact
 
+# 用回环地址的模拟服务测试定稿与提前翻译、滚动、选区及保存/导出（不调用真实 LLM）
+dotnet run --project .\diagnostics\shutdown-20261109\ui -c Release -- translation
+
 # 逐字追加、修订、选区、回看和换行期间的滚动/Rendering 采样
 dotnet run --project .\diagnostics\shutdown-20261109\ui -c Release -- flicker
 ```

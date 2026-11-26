@@ -82,3 +82,6 @@ try { RecognitionLanguageSelection.Select(["en-US"], "zh-CN"); }
 catch (InvalidOperationException) { missingLanguageRejected = true; }
 Check("explicit missing model is rejected", missingLanguageRejected, true);
 Console.WriteLine($"{count} recognition language tests passed.");
+
+await CaptionTranslationTests.RunAsync();
+EarlyCaptionTranslationTests.Run();

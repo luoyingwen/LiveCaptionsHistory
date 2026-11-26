@@ -47,6 +47,7 @@ public partial class MainWindow : Window
         SessionLabel.Text = $"本次记录  {DateTime.Now:MM月dd日 HH:mm}";
         _reader.Reading += reading => Dispatcher.BeginInvoke(() => Receive(reading));
         _saveTimer.Tick += async (_, _) => await SaveAsync();
+        _earlyTimer.Tick += (_, _) => FlushEarlyTranslation();
     }
     protected override void OnSourceInitialized(EventArgs e)
     {
@@ -77,12 +78,26 @@ public partial class MainWindow : Window
         _lastSourceState = reading.State;
         SourceStatus.Text = reading.State;
         UpdateLanguages(reading);
+        if (reading.SourceClosed || reading.Languages is not null || reading.Language is not null)
+            _activeRecognitionLanguage = reading.SourceClosed ? null : reading.Language;
         if (reading.SourceClosed)
         {
+            DiscardUnfinishedTranslation();
             _captions.SourceClosed();
             RenderText();
         }
-        if (reading.Text is not null && _captions.ObserveRecognition(reading.Text, reading.IsFinal)) RenderText();
+        if (reading.Text is { } text)
+        {
+            var changed = _captions.ObserveRecognition(text, reading.IsFinal, out var finalized);
+            ObserveTranslation(changed, finalized);
+            if (changed)
+            {
+                _dirty = true;
+                RenderText();
+            }
+            else if (finalized is not null && _earlyMode)
+                RenderTranscript(_captions.DisplayText, translationOnly: true);
+        }
         UpdateRecordingStatus();
     }
     private void UpdateLanguages(CaptionReading reading)
@@ -113,6 +128,7 @@ public partial class MainWindow : Window
     private void LanguageChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_changingLanguage || LanguagePicker.SelectedItem is not RecognitionLanguage language) return;
+        DiscardUnfinishedTranslation();
         _captions.SourceClosed();
         RenderText();
         _lastSourceState = SourceStatus.Text = "正在切换识别语言…";
@@ -126,9 +142,12 @@ public partial class MainWindow : Window
     }
     private void RenderText()
     {
-        var text = _captions.Text;
-        if (text == TranscriptBox.Text) return;
+        if (RenderTranscript(_captions.DisplayText, translationOnly: false)) _dirty = true;
+    }
+    private bool RenderTranscript(string text, bool translationOnly)
+    {
         var old = TranscriptBox.Text;
+        if (text == old) return false;
         var selectionStart = TranscriptBox.SelectionStart;
         var selectionLength = TranscriptBox.SelectionLength;
         var offset = TranscriptBox.VerticalOffset;
@@ -146,16 +165,26 @@ public partial class MainWindow : Window
             }
             else
             {
-                TranscriptBox.Select(prefix, old.Length - prefix);
-                TranscriptBox.SelectedText = text[prefix..];
-                TranscriptBox.Select(Math.Min(selectionStart, text.Length), Math.Min(selectionLength, Math.Max(0, text.Length - selectionStart)));
+                // A translation may arrive for an older line. Leave the suffix and its selection intact.
+                var suffix = translationOnly ? CommonSuffix(old, text, prefix) : 0;
+                var oldEnd = old.Length - suffix;
+                var newEnd = text.Length - suffix;
+                TranscriptBox.Select(prefix, oldEnd - prefix);
+                TranscriptBox.SelectedText = text[prefix..newEnd];
+                if (translationOnly)
+                {
+                    int MapSelection(int position) => position >= oldEnd ? position + newEnd - oldEnd
+                        : position <= prefix ? position : Math.Min(position, newEnd);
+                    var start = MapSelection(selectionStart);
+                    TranscriptBox.Select(start, MapSelection(selectionStart + selectionLength) - start);
+                }
+                else TranscriptBox.Select(Math.Min(selectionStart, text.Length), Math.Min(selectionLength, Math.Max(0, text.Length - selectionStart)));
             }
         }
         finally { TranscriptBox.EndChange(); }
         UpdateEmptyState();
         CountLabel.Text = $"{text.Length:N0} 字";
-        _dirty = true;
-        if (!_following) _unreadUpdates++;
+        if (!translationOnly && !_following) _unreadUpdates++;
         // Wait for final line layout. Caret-induced scrolls are suppressed before
         // painting, and we move only if wrapping changed the bottom position.
         Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, () =>
@@ -167,6 +196,14 @@ public partial class MainWindow : Window
             _changingText = false;
             UpdateFollowStatus();
         });
+        return true;
+    }
+    private static int CommonSuffix(string old, string text, int prefix)
+    {
+        var suffix = 0;
+        var limit = Math.Min(old.Length, text.Length) - prefix;
+        while (suffix < limit && old[^(suffix + 1)] == text[^(suffix + 1)]) suffix++;
+        return suffix > 0 && char.IsLowSurrogate(old[old.Length - suffix]) ? suffix - 1 : suffix;
     }
     private void KeepTranscriptViewport(object sender, RequestBringIntoViewEventArgs e)
     {
@@ -215,6 +252,7 @@ public partial class MainWindow : Window
     {
         if (_captions.Recording)
         {
+            DiscardUnfinishedTranslation();
             _captions.Pause();
             _reader.Pause();
             PauseButton.Content = "继续记录";
@@ -249,11 +287,13 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(TranscriptBox.Text)) { Notice.Text = "还没有可导出的字幕。"; return; }
         var dialog = new SaveFileDialog { FileName = $"字幕记录-{DateTime.Now:yyyyMMdd-HHmm}.txt", Filter = "文本文件 (*.txt)|*.txt", DefaultExt = ".txt", AddExtension = true };
         if (dialog.ShowDialog(this) != true) return;
-        try { await File.WriteAllTextAsync(dialog.FileName, TranscriptBox.Text, new UTF8Encoding(true)); Notice.Text = "字幕已导出。"; }
+        try { await ExportTranscriptAsync(dialog.FileName); Notice.Text = "字幕已导出。"; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { Notice.Text = "无法写入所选文件，请选择其他位置。"; }
     }
+    private Task ExportTranscriptAsync(string path) => File.WriteAllTextAsync(path, TranscriptBox.Text, new UTF8Encoding(true));
     private void ReconnectClick(object sender, RoutedEventArgs e)
     {
+        DiscardUnfinishedTranslation();
         _captions.SourceClosed();
         RenderText();
         _lastSourceState = SourceStatus.Text = "正在重新连接本机识别引擎…";
@@ -268,9 +308,10 @@ public partial class MainWindow : Window
     private Task SaveAsync()
     {
         if (!_saveTask.IsCompleted) return _saveTask;
-        if (!_dirty || string.IsNullOrWhiteSpace(_captions.Text)) return Task.CompletedTask;
-        _dirty = false;
+        if (!_dirty) return Task.CompletedTask;
         var text = _captions.Text;
+        if (string.IsNullOrWhiteSpace(text)) return Task.CompletedTask;
+        _dirty = false;
         return _saveTask = SaveSnapshotAsync(text);
     }
     private async Task SaveSnapshotAsync(string text)
@@ -299,6 +340,7 @@ public partial class MainWindow : Window
         e.Cancel = true;
         if (_closed) return;
         _closed = true;
+        StopTranslation();
         _saveTimer.Stop();
         IsEnabled = false;
         _captions.Pause();

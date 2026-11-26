@@ -47,6 +47,12 @@
       DisplayMemberPath="Name" SelectedValuePath="Code" SelectionChanged="LanguageChanged"
       AutomationProperties.Name="识别语言" AutomationProperties.AutomationId="RecognitionLanguage"/>
    </StackPanel>
+   <CheckBox x:Name="TranslationCheck" Content="英语字幕翻译为中文" VerticalAlignment="Center" VerticalContentAlignment="Center"
+     Margin="0,0,16,8" Height="36" Checked="TranslationChanged" Unchecked="TranslationChanged" AutomationProperties.AutomationId="TranslateEnglishCaptions"
+     ToolTip="默认仅将已定稿的英语字幕发往翻译服务。自动保存仍保留识别原文。"/>
+   <CheckBox x:Name="EarlyTranslationCheck" Content="提前翻译未定稿字幕" IsEnabled="False" VerticalAlignment="Center" VerticalContentAlignment="Center"
+     Margin="0,0,16,8" Height="36" Checked="EarlyTranslationChanged" Unchecked="EarlyTranslationChanged" AutomationProperties.AutomationId="EarlyCaptionTranslation"
+     ToolTip="允许将看似完整但可能被修订的英语句子发送到翻译服务。识别文字变动时，译文也会更新。"/>
    <StackPanel Orientation="Horizontal" Margin="0,0,16,8" Height="36">
     <TextBlock Text="字号" VerticalAlignment="Center" Margin="0,0,8,0"/>
     <ComboBox x:Name="FontPicker" Width="62" VerticalContentAlignment="Center" SelectionChanged="FontChanged" SelectedIndex="1"
@@ -83,6 +89,12 @@
         </MenuItem>
         <MenuItem x:Name="MenuTopmost" Header="窗口置顶" IsCheckable="True" Click="MenuTopmostClick"/>
         <MenuItem x:Name="MenuPause" Header="暂停记录" Click="PauseClick"/>
+        <MenuItem x:Name="MenuTranslation" Header="英语字幕翻译为中文" IsCheckable="True" Checked="TranslationChanged" Unchecked="TranslationChanged"
+          AutomationProperties.AutomationId="MenuTranslateEnglishCaptions"
+          ToolTip="默认仅将已定稿的英语字幕发往翻译服务。自动保存仍保留识别原文。"/>
+        <MenuItem x:Name="MenuEarlyTranslation" Header="提前翻译未定稿字幕" IsCheckable="True" IsEnabled="False"
+          Checked="EarlyTranslationChanged" Unchecked="EarlyTranslationChanged" AutomationProperties.AutomationId="MenuEarlyCaptionTranslation"/>
+        <MenuItem x:Name="MenuTranslationStatus" Visibility="Collapsed" IsEnabled="False"/>
         <MenuItem Header="回到最新" InputGestureText="Ctrl+End" Click="LatestClick"/>
         <Separator/>
         <MenuItem x:Name="MenuCopySelection" Header="复制选中文字" InputGestureText="Ctrl+C" Click="CopySelectionClick"/>
@@ -118,6 +130,8 @@
    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
    <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
     <TextBlock x:Name="SaveStatus" Text="自动保存到本机" Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap"/>
+    <TextBlock x:Name="TranslationStatus" Visibility="Collapsed" AutomationProperties.AutomationId="CaptionTranslationStatus"
+      Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,0"/>
     <TextBlock x:Name="Notice" Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,0"/>
    </StackPanel>
    <Button Grid.Column="1" Content="历史文件" Click="OpenHistoryClick" Margin="0" ToolTip="打开本机自动保存目录"/>
